@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mac AI | Intelligence Redefined</title>
+    <style>
+        :root {
+            --mac-bg: #000000;
+            --mac-card: #1c1c1e;
+            --mac-accent: #0a84ff;
+            --mac-text: #ffffff;
+            --mac-secondary: #8e8e93;
+            --mac-border: #3a3a3c;
+        }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif; 
+            background-color: var(--mac-bg); 
+            color: var(--mac-text); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+        }
+        .window { 
+            background: var(--mac-card); 
+            width: 90%; 
+            max-width: 600px; 
+            border-radius: 24px; 
+            padding: 40px; 
+            box-shadow: 0 40px 100px rgba(0,0,0,0.7);
+            border: 1px solid var(--mac-border);
+            animation: fadeIn 0.8s ease-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        h1 { font-size: 34px; font-weight: 700; text-align: center; margin-bottom: 5px; letter-spacing: -1px; }
+        p.subtitle { text-align: center; color: var(--mac-secondary); margin-bottom: 35px; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; font-weight: 500; }
+        
+        .input-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-size: 12px; color: var(--mac-secondary); font-weight: 600; padding-left: 5px; }
+
+        select, textarea { 
+            width: 100%; 
+            background: #2c2c2e; 
+            border: 1px solid var(--mac-border); 
+            color: white; 
+            border-radius: 14px; 
+            padding: 16px; 
+            font-size: 16px; 
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+        }
+        textarea { height: 140px; resize: none; line-height: 1.5; }
+        textarea:focus { border-color: var(--mac-accent); outline: none; background: #3a3a3c; }
+        
+        button { 
+            width: 100%; 
+            background-color: var(--mac-accent); 
+            color: white; 
+            border: none; 
+            padding: 18px; 
+            border-radius: 14px; 
+            font-weight: 600; 
+            font-size: 17px; 
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 10px;
+        }
+        button:hover { background-color: #409fff; transform: scale(1.02); }
+        button:active { transform: scale(0.98); }
+        button:disabled { background-color: #48484a; cursor: not-allowed; opacity: 0.5; }
+
+        #response-container { 
+            margin-top: 35px; 
+            padding: 20px; 
+            background: rgba(0,0,0,0.3); 
+            border-radius: 16px; 
+            font-size: 15px; 
+            line-height: 1.6; 
+            min-height: 80px;
+            color: #e5e5e7;
+            border: 1px solid var(--mac-border);
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .loader { color: var(--mac-accent); font-weight: 500; display: block; text-align: center; padding: 10px; }
+        
+        /* Custom Scrollbar for Mac look */
+        #response-container::-webkit-scrollbar { width: 6px; }
+        #response-container::-webkit-scrollbar-thumb { background: #48484a; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="window">
+    <h1>Mac AI</h1>
+    <p class="subtitle">Unified Intelligence Dashboard</p>
+
+    <div class="input-group">
+        <label>SELECT AI ARCHITECTURE</label>
+        <select id="modelSelect">
+            <option value="google/gemini-2.0-flash-exp:free">Gemini 2.0 Flash (Fast & Modern)</option>
+            <option value="meta-llama/llama-3.3-70b-instruct:free">Llama 3.3 (High Logic)</option>
+            <option value="mistralai/mistral-7b-instruct:free">Mistral 7B (Coding Helper)</option>
+            <option value="openrouter/auto">Auto-Select (Best Available)</option>
+        </select>
+    </div>
+
+    <div class="input-group">
+        <label>USER COMMAND</label>
+        <textarea id="userInput" placeholder="Type your query for Mac AI..."></textarea>
+    </div>
+
+    <button id="askBtn" onclick="runMacAI()">Execute Request</button>
+
+    <div id="response-container">
+        <div id="output">System initialized. Awaiting command...</div>
+    </div>
+</div>
+
+<script>
+    // Your updated Google Apps Script Gateway
+    const APP_URL = "https://script.google.com/macros/s/AKfycbzt1KKASg0YOossuYGeecwmABffINcllNeRXnRJ3QZt4O2XqymTX2W4g3Dzu4C4ovI/exec";
+
+    async function runMacAI() {
+        const prompt = document.getElementById('userInput').value;
+        const model = document.getElementById('modelSelect').value;
+        const output = document.getElementById('output');
+        const btn = document.getElementById('askBtn');
+
+        if(!prompt.trim()) {
+            alert("Please provide a prompt.");
+            return;
+        }
+
+        // Reset UI for processing
+        output.innerHTML = '<span class="loader">Querying AI Gateway...</span>';
+        btn.disabled = true;
+
+        try {
+            const response = await fetch(APP_URL, {
+                method: "POST",
+                // Using text/plain to avoid CORS pre-flight blocks in browsers
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify({ 
+                    prompt: prompt, 
+                    model: model 
+                })
+            });
+
+            const result = await response.json();
+            
+            if (result.choices && result.choices[0]) {
+                // If the AI answers, we display it here
+                output.innerText = result.choices[0].message.content;
+            } else if (result.error) {
+                output.innerText = "Gateway Error: " + result.error;
+            } else {
+                output.innerText = "Error: Invalid response format from API.";
+            }
+        } catch (e) {
+            // Note for the Developer: 
+            // If the script runs but doesn't return data, check Google Script logs.
+            output.innerText = "Network Status: Request processed. If output is missing, verify the API Key in your Google Script.";
+            console.error("System Error:", e);
+        } finally {
+            btn.disabled = false;
+        }
+    }
+</script>
+
+</body>
+</html>
