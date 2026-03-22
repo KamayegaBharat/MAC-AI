@@ -12,6 +12,7 @@
             --mac-text: #ffffff;
             --mac-secondary: #8e8e93;
             --mac-border: #3a3a3c;
+            --mac-green: #32d74b;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
@@ -22,6 +23,7 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
+            overflow: hidden;
         }
         .window {
             background: var(--mac-card);
@@ -31,91 +33,96 @@
             padding: 40px;
             box-shadow: 0 40px 100px rgba(0,0,0,0.7);
             border: 1px solid var(--mac-border);
-            animation: fadeIn 0.8s ease-out;
+            animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
         h1 { font-size: 34px; font-weight: 700; text-align: center; margin-bottom: 5px; letter-spacing: -1px; }
-        p.subtitle { text-align: center; color: var(--mac-secondary); margin-bottom: 35px; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; font-weight: 500; }
-        .input-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-size: 12px; color: var(--mac-secondary); font-weight: 600; padding-left: 5px; }
+        p.subtitle { text-align: center; color: var(--mac-secondary); margin-bottom: 35px; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; font-weight: 600; }
+        
+        .input-group { margin-bottom: 22px; }
+        label { display: block; margin-bottom: 8px; font-size: 11px; color: var(--mac-secondary); font-weight: 700; padding-left: 5px; }
+        
         select, textarea {
             width: 100%;
             background: #2c2c2e;
             border: 1px solid var(--mac-border);
             color: white;
-            border-radius: 14px;
-            padding: 16px;
-            font-size: 16px;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 15px;
             box-sizing: border-box;
             transition: all 0.2s ease;
+            font-family: inherit;
         }
-        textarea { height: 140px; resize: none; line-height: 1.5; }
-        textarea:focus { border-color: var(--mac-accent); outline: none; background: #3a3a3c; }
+        textarea { height: 120px; resize: none; line-height: 1.5; }
+        textarea:focus, select:focus { border-color: var(--mac-accent); outline: none; background: #3a3a3c; }
+        
         button {
             width: 100%;
             background-color: var(--mac-accent);
             color: white;
             border: none;
-            padding: 18px;
-            border-radius: 14px;
+            padding: 16px;
+            border-radius: 12px;
             font-weight: 600;
-            font-size: 17px;
+            font-size: 16px;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            margin-top: 10px;
+            transition: all 0.3s ease;
+            margin-top: 5px;
         }
-        button:hover { background-color: #409fff; transform: scale(1.02); }
-        button:active { transform: scale(0.98); }
-        button:disabled { background-color: #48484a; cursor: not-allowed; opacity: 0.5; }
+        button:hover { background-color: #409fff; box-shadow: 0 0 15px rgba(10, 132, 255, 0.4); }
+        button:disabled { background-color: #48484a; opacity: 0.6; cursor: not-allowed; }
+
         #response-container {
-            margin-top: 35px;
+            margin-top: 30px;
             padding: 20px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 16px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 14px;
             font-size: 15px;
             line-height: 1.6;
-            min-height: 80px;
-            color: #e5e5e7;
+            min-height: 60px;
+            color: #f5f5f7;
             border: 1px solid var(--mac-border);
-            max-height: 300px;
+            max-height: 250px;
             overflow-y: auto;
             white-space: pre-wrap;
         }
-        .loader { color: var(--mac-accent); font-weight: 500; display: block; text-align: center; padding: 10px; }
-        #response-container::-webkit-scrollbar { width: 6px; }
-        #response-container::-webkit-scrollbar-thumb { background: #48484a; border-radius: 10px; }
+        .status-dot { height: 8px; width: 8px; background-color: var(--mac-green); border-radius: 50%; display: inline-block; margin-right: 5px; }
+        .loader { color: var(--mac-accent); font-weight: 500; display: block; text-align: center; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
 <div class="window">
     <h1>Mac AI</h1>
-    <p class="subtitle">Unified Intelligence Dashboard</p>
+    <p class="subtitle"><span class="status-dot"></span> System Online</p>
 
     <div class="input-group">
-        <label>SELECT AI ARCHITECTURE</label>
+        <label>MODEL ARCHITECTURE</label>
         <select id="modelSelect">
-            <option value="google/gemini-2.0-flash-exp:free">Gemini 2.0 Flash (Fast & Modern)</option>
-            <option value="meta-llama/llama-3.3-70b-instruct:free">Llama 3.3 (High Logic)</option>
-            <option value="mistralai/mistral-7b-instruct:free">Mistral 7B (Coding Helper)</option>
-            <option value="openrouter/auto">Auto-Select (Best Available)</option>
+            <option value="google/gemma-3-27b:free">Gemma 3 27B (Newest & Best)</option>
+            <option value="meta-llama/llama-3.3-70b-instruct:free">Llama 3.3 70B (High Intelligence)</option>
+            <option value="qwen/qwen-3-480b-instruct:free">Qwen 3 (Deep Logic)</option>
+            <option value="mistralai/mistral-small-24b-instruct-2501:free">Mistral Small (Fast Coding)</option>
+            <option value="openrouter/auto">Auto-Select (Dynamic)</option>
         </select>
     </div>
 
     <div class="input-group">
-        <label>USER COMMAND</label>
-        <textarea id="userInput" placeholder="Type your query for Mac AI..."></textarea>
+        <label>PROMPT INPUT</label>
+        <textarea id="userInput" placeholder="Ask Mac AI anything..."></textarea>
     </div>
 
-    <button id="askBtn" onclick="runMacAI()">Execute Request</button>
+    <button id="askBtn" onclick="runMacAI()">Execute Engine</button>
 
     <div id="response-container">
-        <div id="output">System initialized. Awaiting command...</div>
+        <div id="output">Ready for input.</div>
     </div>
 </div>
 
 <script>
-    // ✅ CORRECT: Use your actual /exec deployment URL — never the echo URL
     const APP_URL = "https://script.google.com/macros/s/AKfycby_s7sh8RrD9aT60MtyMeSUN0wnOg126uoJ3AT4osJ1wYmFUIp5n17kGC-WvkQk7KU/exec";
 
     async function runMacAI() {
@@ -124,36 +131,31 @@
         const output = document.getElementById('output');
         const btn = document.getElementById('askBtn');
 
-        if (!prompt) {
-            alert("Please provide a prompt.");
-            return;
-        }
+        if (!prompt) return;
 
-        output.innerHTML = '<span class="loader">⟳ Querying AI Gateway...</span>';
+        output.innerHTML = '<span class="loader">Processing Neural Request...</span>';
         btn.disabled = true;
 
         try {
-            // ✅ GET request with data in URL — avoids ALL CORS and redirect issues
-            const payload = encodeURIComponent(JSON.stringify({ prompt, model }));
-            const response = await fetch(APP_URL + "?data=" + payload);
+            // Using the GET method you established to bypass CORS
+            const params = new URLSearchParams({ data: JSON.stringify({ prompt, model }) });
+            const response = await fetch(`${APP_URL}?${params.toString()}`);
 
-            if (!response.ok) {
-                throw new Error("HTTP Error: " + response.status);
-            }
+            if (!response.ok) throw new Error("Connection Refused");
 
             const result = await response.json();
 
             if (result.choices && result.choices[0]) {
                 output.innerText = result.choices[0].message.content;
             } else if (result.error) {
-                output.innerText = "⚠️ API Error: " + (result.error.message || JSON.stringify(result.error));
+                output.innerText = "System Error: " + (result.error.message || "Model Unavailable");
             } else {
-                output.innerText = "Unexpected response:\n" + JSON.stringify(result, null, 2);
+                output.innerText = "Error: Logic Gateway timed out.";
             }
 
         } catch (err) {
-            output.innerText = "❌ Error: " + err.message;
-            console.error("Error:", err);
+            output.innerText = "❌ Network Error: Verify Google Script Deployment.";
+            console.error(err);
         } finally {
             btn.disabled = false;
         }
