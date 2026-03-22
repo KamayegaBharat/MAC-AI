@@ -168,33 +168,3 @@
 </script>
 </body>
 </html>
-```
-
----
-
-### 🚀 Critical Deployment Checklist
-
-After fixing the script, you **must redeploy** — editing alone is not enough:
-
-| Step | Action |
-|---|---|
-| 1 | In Apps Script editor, click **Deploy → Manage Deployments** |
-| 2 | Click the ✏️ pencil (edit) icon on your deployment |
-| 3 | Set **"Who has access"** → **Anyone** |
-| 4 | Change the version to **"New version"** (very important!) |
-| 5 | Click **Deploy** and copy the new URL back into your HTML |
-
-> ⚠️ **Why "New version"?** Google caches old deployments. If you fix the code but don't create a new version, the old broken code keeps running.
-
----
-
-### Summary of All Changes
-```
-BEFORE (broken)              →   AFTER (fixed)
-─────────────────────────────────────────────────
-function myFunction() {      →   // Gone! Deleted.
-  function doPost(e) { }     →   function doPost(e) { }  ← top-level now
-}
-
-Content-Type: text/plain     →   ✅ Keep this — it's correct!
-response.json() no check     →   Added response.ok check + better error display
