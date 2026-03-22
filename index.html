@@ -79,7 +79,7 @@
             border: 1px solid var(--mac-border);
             max-height: 300px;
             overflow-y: auto;
-            white-space: pre-wrap; /* preserves line breaks in AI response */
+            white-space: pre-wrap;
         }
         .loader { color: var(--mac-accent); font-weight: 500; display: block; text-align: center; padding: 10px; }
         #response-container::-webkit-scrollbar { width: 6px; }
@@ -115,7 +115,8 @@
 </div>
 
 <script>
-    const APP_URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AWDtjMWeYRsobbssvxpoXkZbjrjF0ZYFdAWdYnW-zGMgZZwxQ5U1WKv0EmyxMMffT3L6yztrnhxztPpXwX6t35MgJWVy3TVSWJQz7FUkcnIGjIttuJholUng_yeSkHn3DGUXV9Pcg4SsTr12VkT7dEs6Ou4cduuBmy7Hr_gt2bgRn9bHZWlvHDc6p2iPLLrbdioMtytdRDk0jUkj60UoCw-ARqORgUx_q0MM5iibL8myKuOU8wfJ_USBe76Asoix3ABFtQiK9yMyQY4eeay2DF0k-LTZHrW4OA&lib=MsP1aJiIAhpNmsvBo6e86BdkqcO1Ikdrk";
+    // ✅ CORRECT: Use your actual /exec deployment URL — never the echo URL
+    const APP_URL = "https://script.google.com/macros/s/AKfycbw3mN0oTjjVABJvB2qETS7MsIf7gDKrrrxxW4efkND3E0pVDuBLiJDKRgS5t4Lm8m9u/exec";
 
     async function runMacAI() {
         const prompt = document.getElementById('userInput').value.trim();
@@ -132,17 +133,12 @@
         btn.disabled = true;
 
         try {
-            const response = await fetch(APP_URL, {
-                method: "POST",
-                // ✅ KEY FIX: "text/plain" avoids the CORS preflight OPTIONS check.
-                // The browser treats this as a "Simple Request" — no preflight needed.
-                // Google Apps Script handles Simple Requests automatically.
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify({ prompt, model })
-            });
+            // ✅ GET request with data in URL — avoids ALL CORS and redirect issues
+            const payload = encodeURIComponent(JSON.stringify({ prompt, model }));
+            const response = await fetch(APP_URL + "?data=" + payload);
 
             if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
+                throw new Error("HTTP Error: " + response.status);
             }
 
             const result = await response.json();
@@ -150,16 +146,13 @@
             if (result.choices && result.choices[0]) {
                 output.innerText = result.choices[0].message.content;
             } else if (result.error) {
-                // Shows errors from OpenRouter or the script itself
-                output.innerText = "⚠️ Error: " + (result.error.message || JSON.stringify(result.error));
+                output.innerText = "⚠️ API Error: " + (result.error.message || JSON.stringify(result.error));
             } else {
-                // Dump the raw result so you can debug unexpected formats
                 output.innerText = "Unexpected response:\n" + JSON.stringify(result, null, 2);
             }
 
         } catch (err) {
-            output.innerText = "❌ Network/Fetch Error: " + err.message +
-                               "\n\nCheck: Is your Apps Script deployed as 'Anyone' access?";
+            output.innerText = "❌ Error: " + err.message;
             console.error("Error:", err);
         } finally {
             btn.disabled = false;
